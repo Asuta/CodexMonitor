@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+﻿import { useCallback, useRef } from "react";
 import { useUpdater } from "../../update/hooks/useUpdater";
 import { useAgentSoundNotifications } from "../../notifications/hooks/useAgentSoundNotifications";
 import { useAgentSystemNotifications } from "../../notifications/hooks/useAgentSystemNotifications";
@@ -28,7 +28,10 @@ export function useUpdaterController({
   successSoundUrl,
   errorSoundUrl,
 }: Params) {
+  // Keep updater checks disabled by default to avoid automatic/manual update prompts.
+  const updateChecksEnabled = false;
   const { state: updaterState, startUpdate, checkForUpdates, dismiss } = useUpdater({
+    enabled: updateChecksEnabled,
     onDebug,
   });
   const isWindowFocused = useWindowFocusState();
@@ -51,6 +54,9 @@ export function useUpdaterController({
   );
 
   useTauriEvent(subscribeUpdaterCheckEvent, () => {
+    if (!updateChecksEnabled) {
+      return;
+    }
     void checkForUpdates({ announceNoUpdate: true });
   });
 
