@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type {
   ChangeEvent,
   ClipboardEvent,
+  FocusEvent,
   KeyboardEvent,
   RefObject,
   SyntheticEvent,
@@ -202,6 +203,43 @@ export function ComposerInput({
     onAttachImages,
   });
 
+  const latestTextRef = useRef(text);
+
+  useEffect(() => {
+    latestTextRef.current = text;
+  }, [text]);
+
+  const syncTextareaValue = useCallback(
+    (selectionStart: number | null = null) => {
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+      const domValue = textarea.value;
+      if (domValue === latestTextRef.current) {
+        return;
+      }
+      onTextChange(domValue, selectionStart ?? textarea.selectionStart ?? null);
+    },
+    [onTextChange, textareaRef],
+  );
+
+  // Some speech-to-text tools update DOM value directly without firing React's onChange.
+  // Polling while focused keeps the controlled state in sync with external input methods.
+  useEffect(() => {
+    const timerId = window.setInterval(() => {
+      const textarea = textareaRef.current;
+      if (!textarea || document.activeElement !== textarea) {
+        return;
+      }
+      syncTextareaValue(textarea.selectionStart ?? null);
+    }, 200);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [syncTextareaValue, textareaRef]);
+
   useEffect(() => {
     if (!suggestionsOpen || suggestions.length === 0) {
       return;
@@ -307,6 +345,15 @@ export function ComposerInput({
     [handlePaste, onTextPaste],
   );
 
+  const handleTextareaBlur = useCallback(
+    (event: FocusEvent<HTMLTextAreaElement>) => {
+      const target = event.currentTarget;
+      syncTextareaValue(target.selectionStart ?? null);
+      onSelectionChange(target.selectionStart);
+    },
+    [onSelectionChange, syncTextareaValue],
+  );
+
   return (
     <div className="composer-input">
       <div
@@ -334,15 +381,23 @@ export function ComposerInput({
             <ImagePlus size={14} aria-hidden />
           </button>
           <textarea
+            id="composer-input"
+            name="prompt"
             ref={textareaRef}
             placeholder={
               disabled
                 ? "Review in progress. Chat will re-enable when it completes."
                 : "Ask Codex to do something..."
             }
+            aria-label="Composer input"
+            autoCorrect="on"
+            autoCapitalize="sentences"
+            autoComplete="off"
+            spellCheck
             value={text}
             onChange={handleTextareaChange}
             onSelect={handleTextareaSelect}
+            onBlur={handleTextareaBlur}
             disabled={disabled}
             onKeyDown={onKeyDown}
             onDragOver={handleDragOver}

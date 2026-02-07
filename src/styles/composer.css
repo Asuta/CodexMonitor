@@ -729,6 +729,7 @@
   border: none;
   background: transparent;
   color: var(--text-muted);
+  color-scheme: dark;
   font-size: 11px;
   padding: 2px 12px 2px 0;
   cursor: pointer;
@@ -743,6 +744,15 @@
     calc(100% - 2px) calc(50% + 1px);
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
+}
+
+.composer-select option {
+  color: var(--text-strong);
+  background-color: var(--surface-popover);
+}
+
+:root[data-theme="light"] .composer-select {
+  color-scheme: light;
 }
 
 .composer-select--model {
@@ -768,4 +778,8 @@
 .composer-select:focus {
   outline: none;
   color: var(--text-strong);
+}
+
+.composer-select-wrap:has(.composer-select:focus-visible) {
+  box-shadow: 0 0 0 2px var(--border-accent-soft);
 }
