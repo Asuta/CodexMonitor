@@ -11,6 +11,13 @@ type UseModelsOptions = {
 
 const CONFIG_MODEL_DESCRIPTION = "Configured in CODEX_HOME/config.toml";
 
+const DEFAULT_CUSTOM_REASONING_EFFORTS = ["low", "medium", "high", "xhigh"] as const;
+const DEFAULT_CUSTOM_REASONING_EFFORT_DESCRIPTIONS: Record<string, string> = {  low: "Low effort",
+  medium: "Medium effort",
+  high: "High effort",
+  xhigh: "XHigh effort",
+};
+
 const normalizeEffort = (value: unknown): string | null => {
   if (typeof value !== "string") {
     return null;
@@ -121,7 +128,8 @@ export function useModels({
         (effort) => effort.reasoningEffort,
       );
       const currentEffort = normalizeEffort(selectedEffort);
-      if (preferCurrent && currentEffort) {
+      // If the user explicitly selected Default, keep null and do not force a model effort.
+      if (preferCurrent) {
         return currentEffort;
       }
       if (supportedEfforts.length === 0) {
@@ -230,8 +238,11 @@ export function useModels({
           model: configModelFromConfig,
           displayName: `${configModelFromConfig} (config)`,
           description: CONFIG_MODEL_DESCRIPTION,
-          supportedReasoningEfforts: [],
-          defaultReasoningEffort: null,
+          supportedReasoningEfforts: DEFAULT_CUSTOM_REASONING_EFFORTS.map((effort) => ({
+            reasoningEffort: effort,
+            description: DEFAULT_CUSTOM_REASONING_EFFORT_DESCRIPTIONS[effort],
+          })),
+          defaultReasoningEffort: "medium",
           isDefault: false,
         };
         return [configOption, ...dataFromServer];
@@ -290,6 +301,9 @@ export function useModels({
     if (!selectedModel) {
       return;
     }
+    if (hasUserSelectedEffort.current) {
+      return;
+    }
     const currentEffort = normalizeEffort(selectedEffort);
     if (currentEffort) {
       return;
@@ -298,7 +312,6 @@ export function useModels({
     if (nextEffort === null) {
       return;
     }
-    hasUserSelectedEffort.current = false;
     setSelectedEffortState(nextEffort);
   }, [selectedEffort, selectedModel]);
 
@@ -350,3 +363,4 @@ export function useModels({
     refreshModels,
   };
 }
+

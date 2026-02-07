@@ -21,7 +21,7 @@ type UseComposerMenuActionsOptions = {
   onSelectAccessMode: (mode: AccessMode) => void;
   reasoningOptions: string[];
   selectedEffort: string | null;
-  onSelectEffort: (effort: string) => void;
+  onSelectEffort: (effort: string | null) => void;
   reasoningSupported: boolean;
   onFocusComposer?: () => void;
 };

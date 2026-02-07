@@ -12,7 +12,7 @@ type ComposerMetaBarProps = {
   onSelectModel: (id: string) => void;
   reasoningOptions: string[];
   selectedEffort: string | null;
-  onSelectEffort: (effort: string) => void;
+  onSelectEffort: (effort: string | null) => void;
   reasoningSupported: boolean;
   accessMode: AccessMode;
   onSelectAccessMode: (mode: AccessMode) => void;
@@ -179,10 +179,10 @@ export function ComposerMetaBar({
             className="composer-select composer-select--effort"
             aria-label="Thinking mode"
             value={selectedEffort ?? ""}
-            onChange={(event) => onSelectEffort(event.target.value)}
+            onChange={(event) => onSelectEffort(event.target.value || null)}
             disabled={disabled || !reasoningSupported}
           >
-            {reasoningOptions.length === 0 && <option value="">Default</option>}
+            <option value="">Default</option>
             {reasoningOptions.map((effort) => (
               <option key={effort} value={effort}>
                 {effort}

@@ -63,7 +63,7 @@ type WorkspaceHomeProps = {
   onSelectCollaborationMode: (id: string | null) => void;
   reasoningOptions: string[];
   selectedEffort: string | null;
-  onSelectEffort: (effort: string) => void;
+  onSelectEffort: (effort: string | null) => void;
   reasoningSupported: boolean;
   error: string | null;
   isSubmitting: boolean;
@@ -773,10 +773,10 @@ export function WorkspaceHome({
               className="composer-select composer-select--effort"
               aria-label="Thinking mode"
               value={selectedEffort ?? ""}
-              onChange={(event) => onSelectEffort(event.target.value)}
+              onChange={(event) => onSelectEffort(event.target.value || null)}
               disabled={isSubmitting || !reasoningSupported}
             >
-              {reasoningOptions.length === 0 && <option value="">Default</option>}
+              <option value="">Default</option>
               {reasoningOptions.map((effortOption) => (
                 <option key={effortOption} value={effortOption}>
                   {effortOption}

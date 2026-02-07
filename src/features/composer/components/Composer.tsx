@@ -53,7 +53,7 @@ type ComposerProps = {
   onSelectModel: (id: string) => void;
   reasoningOptions: string[];
   selectedEffort: string | null;
-  onSelectEffort: (effort: string) => void;
+  onSelectEffort: (effort: string | null) => void;
   reasoningSupported: boolean;
   accessMode: "read-only" | "current" | "full-access";
   onSelectAccessMode: (mode: "read-only" | "current" | "full-access") => void;
