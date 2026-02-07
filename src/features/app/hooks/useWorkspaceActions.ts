@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import { useCallback } from "react";
 import { useNewAgentShortcut } from "./useNewAgentShortcut";
 import type { DebugEntry, WorkspaceInfo } from "../../../types";
+import type { AppLocale } from "../../../utils/locale";
 
 type Params = {
   activeWorkspace: WorkspaceInfo | null;
@@ -17,6 +18,7 @@ type Params = {
   openClonePrompt: (workspace: WorkspaceInfo) => void;
   composerInputRef: RefObject<HTMLTextAreaElement | null>;
   onDebug: (entry: DebugEntry) => void;
+  locale: AppLocale;
 };
 
 export function useWorkspaceActions({
@@ -33,6 +35,7 @@ export function useWorkspaceActions({
   openClonePrompt,
   composerInputRef,
   onDebug,
+  locale,
 }: Params) {
   const handleWorkspaceAdded = useCallback(
     (workspace: WorkspaceInfo) => {
@@ -59,9 +62,9 @@ export function useWorkspaceActions({
         label: "workspace/add error",
         payload: message,
       });
-      alert(`Failed to add workspace.\n\n${message}`);
+      alert(locale === "zh-CN" ? `\u6dfb\u52a0\u5de5\u4f5c\u533a\u5931\u8d25\u3002\n\n${message}` : `Failed to add workspace.\n\n${message}`);
     }
-  }, [addWorkspace, handleWorkspaceAdded, onDebug]);
+  }, [addWorkspace, handleWorkspaceAdded, locale, onDebug]);
 
   const handleAddWorkspaceFromPath = useCallback(
     async (path: string) => {
@@ -79,10 +82,10 @@ export function useWorkspaceActions({
           label: "workspace/add error",
           payload: message,
         });
-        alert(`Failed to add workspace.\n\n${message}`);
+        alert(locale === "zh-CN" ? `\u6dfb\u52a0\u5de5\u4f5c\u533a\u5931\u8d25\u3002\n\n${message}` : `Failed to add workspace.\n\n${message}`);
       }
     },
-    [addWorkspaceFromPath, handleWorkspaceAdded, onDebug],
+    [addWorkspaceFromPath, handleWorkspaceAdded, locale, onDebug],
   );
 
   const handleAddAgent = useCallback(

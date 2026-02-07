@@ -56,6 +56,7 @@ import type { UpdateState } from "../../update/hooks/useUpdater";
 import type { TerminalSessionState } from "../../terminal/hooks/useTerminalSession";
 import type { TerminalTab } from "../../terminal/hooks/useTerminalTabs";
 import type { ErrorToast } from "../../../services/toasts";
+import type { AppLocale } from "../../../utils/locale";
 
 type ThreadActivityStatus = {
   isProcessing: boolean;
@@ -148,6 +149,8 @@ type LayoutNodesOptions = {
   onOpenDebug: () => void;
   showDebugButton: boolean;
   onAddWorkspace: () => void;
+  locale: AppLocale;
+  onLocaleChange: (locale: AppLocale) => void;
   onSelectHome: () => void;
   onSelectWorkspace: (workspaceId: string) => void;
   onConnectWorkspace: (workspace: WorkspaceInfo) => Promise<void>;
@@ -662,6 +665,8 @@ export function useLayoutNodes(options: LayoutNodesOptions): LayoutNodesResult {
     <Home
       onOpenProject={options.onAddWorkspace}
       onAddWorkspace={options.onAddWorkspace}
+      locale={options.locale}
+      onLocaleChange={options.onLocaleChange}
       latestAgentRuns={options.latestAgentRuns}
       isLoadingLatestAgents={options.isLoadingLatestAgents}
       localUsageSnapshot={options.localUsageSnapshot}

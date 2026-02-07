@@ -115,6 +115,7 @@ import { useCodeCssVars } from "./features/app/hooks/useCodeCssVars";
 import { useAccountSwitching } from "./features/app/hooks/useAccountSwitching";
 import { useNewAgentDraft } from "./features/app/hooks/useNewAgentDraft";
 import { useSystemNotificationThreadLinks } from "./features/app/hooks/useSystemNotificationThreadLinks";
+import { getStoredAppLocale, setStoredAppLocale, type AppLocale } from "./utils/locale";
 
 const AboutView = lazy(() =>
   import("./features/about/components/AboutView").then((module) => ({
@@ -190,7 +191,12 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState<
     "projects" | "codex" | "git" | "log"
   >("codex");
+  const [locale, setLocale] = useState<AppLocale>(() => getStoredAppLocale());
   const tabletTab = activeTab === "projects" ? "codex" : activeTab;
+  const handleLocaleChange = useCallback((nextLocale: AppLocale) => {
+    setLocale(nextLocale);
+    setStoredAppLocale(nextLocale);
+  }, []);
   const {
     workspaces,
     workspaceGroups,
@@ -1511,6 +1517,7 @@ function MainApp() {
     openClonePrompt,
     composerInputRef,
     onDebug: addDebugEntry,
+    locale,
   });
 
   const handleDropWorkspacePaths = useCallback(
@@ -1818,6 +1825,8 @@ function MainApp() {
     onOpenDebug: handleDebugClick,
     showDebugButton,
     onAddWorkspace: handleAddWorkspace,
+    locale,
+    onLocaleChange: handleLocaleChange,
     onSelectHome: () => {
       resetPullRequestSelection();
       clearDraftState();
@@ -2397,6 +2406,8 @@ function MainApp() {
           onDownloadDictationModel: dictationModel.download,
           onCancelDictationDownload: dictationModel.cancel,
           onRemoveDictationModel: dictationModel.remove,
+          locale,
+          onLocaleChange: handleLocaleChange,
         }}
       />
     </div>

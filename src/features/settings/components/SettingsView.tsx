@@ -54,6 +54,7 @@ import { GENERIC_APP_ICON, getKnownOpenAppIcon } from "../../app/utils/openAppIc
 import { useGlobalAgentsMd } from "../hooks/useGlobalAgentsMd";
 import { useGlobalCodexConfigToml } from "../hooks/useGlobalCodexConfigToml";
 import { FileEditorCard } from "../../shared/components/FileEditorCard";
+import type { AppLocale } from "../../../utils/locale";
 
 const DICTATION_MODELS = [
   { id: "tiny", label: "Tiny", size: "75 MB", note: "Fastest, least accurate." },
@@ -183,6 +184,8 @@ export type SettingsViewProps = {
   onCancelDictationDownload?: () => void;
   onRemoveDictationModel?: () => void;
   initialSection?: CodexSection;
+  locale?: AppLocale;
+  onLocaleChange?: (locale: AppLocale) => void;
 };
 
 type SettingsSection =
@@ -327,7 +330,11 @@ export function SettingsView({
   onCancelDictationDownload,
   onRemoveDictationModel,
   initialSection,
+  locale = "en",
+  onLocaleChange,
 }: SettingsViewProps) {
+  const isZh = locale === "zh-CN";
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const [activeSection, setActiveSection] = useState<CodexSection>("projects");
   const [environmentWorkspaceId, setEnvironmentWorkspaceId] = useState<string | null>(
     null,
@@ -1142,12 +1149,12 @@ export function SettingsView({
       <div className="settings-backdrop" onClick={onClose} />
       <div className="settings-window">
         <div className="settings-titlebar">
-          <div className="settings-title">Settings</div>
+          <div className="settings-title">{t("Settings", "\u8bbe\u7f6e")}</div>
           <button
             type="button"
             className="ghost icon-button settings-close"
             onClick={onClose}
-            aria-label="Close settings"
+            aria-label={t("Close settings", "\u5173\u95ed\u8bbe\u7f6e")}
           >
             <X aria-hidden />
           </button>
@@ -1160,7 +1167,7 @@ export function SettingsView({
               onClick={() => setActiveSection("projects")}
             >
               <LayoutGrid aria-hidden />
-              Projects
+              {t("Projects", "\u9879\u76ee")}
             </button>
             <button
               type="button"
@@ -1168,7 +1175,7 @@ export function SettingsView({
               onClick={() => setActiveSection("environments")}
             >
               <Layers aria-hidden />
-              Environments
+              {t("Environments", "\u73af\u5883") }
             </button>
             <button
               type="button"
@@ -1176,7 +1183,7 @@ export function SettingsView({
               onClick={() => setActiveSection("display")}
             >
               <SlidersHorizontal aria-hidden />
-              Display &amp; Sound
+              {t("Display & Sound", "\u663e\u793a\u4e0e\u58f0\u97f3")}
             </button>
             <button
               type="button"
@@ -1184,7 +1191,7 @@ export function SettingsView({
               onClick={() => setActiveSection("composer")}
             >
               <FileText aria-hidden />
-              Composer
+              {t("Composer", "\u8f93\u5165\u7f16\u8f91")}
             </button>
             <button
               type="button"
@@ -1192,7 +1199,7 @@ export function SettingsView({
               onClick={() => setActiveSection("dictation")}
             >
               <Mic aria-hidden />
-              Dictation
+              {t("Dictation", "\u8bed\u97f3\u8f93\u5165")}
             </button>
             <button
               type="button"
@@ -1200,7 +1207,7 @@ export function SettingsView({
               onClick={() => setActiveSection("shortcuts")}
             >
               <Keyboard aria-hidden />
-              Shortcuts
+              {t("Shortcuts", "\u5feb\u6377\u952e")}
             </button>
             <button
               type="button"
@@ -1208,7 +1215,7 @@ export function SettingsView({
               onClick={() => setActiveSection("open-apps")}
             >
               <ExternalLink aria-hidden />
-              Open in
+              {t("Open in", "\u6253\u5f00\u65b9\u5f0f")}
             </button>
             <button
               type="button"
@@ -1216,7 +1223,7 @@ export function SettingsView({
               onClick={() => setActiveSection("git")}
             >
               <GitBranch aria-hidden />
-              Git
+              {t("Git", "Git")}
             </button>
             <button
               type="button"
@@ -1224,7 +1231,7 @@ export function SettingsView({
               onClick={() => setActiveSection("codex")}
             >
               <TerminalSquare aria-hidden />
-              Codex
+              {t("Codex", "Codex")}
             </button>
             <button
               type="button"
@@ -1232,26 +1239,37 @@ export function SettingsView({
               onClick={() => setActiveSection("features")}
             >
               <FlaskConical aria-hidden />
-              Features
+              {t("Features", "\u529f\u80fd\u7279\u6027")}
             </button>
+            <div className="settings-language-switcher">
+              <label htmlFor="settings-language-select">{t("Language", "\u8bed\u8a00")}</label>
+              <select
+                id="settings-language-select"
+                value={locale}
+                onChange={(event) => onLocaleChange?.(event.target.value as AppLocale)}
+              >
+                <option value="en">English</option>
+                <option value="zh-CN">{"中文"}</option>
+              </select>
+            </div>
           </aside>
           <div className="settings-content">
             {activeSection === "projects" && (
               <section className="settings-section">
-                <div className="settings-section-title">Projects</div>
+                <div className="settings-section-title">{t("Projects", "\u9879\u76ee")}</div>
                 <div className="settings-section-subtitle">
-                  Group related workspaces and reorder projects within each group.
+                  {t("Group related workspaces and reorder projects within each group.", "\u5c06\u76f8\u5173\u5de5\u4f5c\u533a\u5206\u7ec4\uff0c\u5e76\u5728\u6bcf\u4e2a\u5206\u7ec4\u5185\u8c03\u6574\u9879\u76ee\u987a\u5e8f\u3002")}
                 </div>
-                <div className="settings-subsection-title">Groups</div>
+                <div className="settings-subsection-title">{t("Groups", "\u5206\u7ec4")}</div>
                 <div className="settings-subsection-subtitle">
-                  Create group labels for related repositories.
+                  {t("Create group labels for related repositories.", "\u4e3a\u76f8\u5173\u4ed3\u5e93\u521b\u5efa\u5206\u7ec4\u6807\u7b7e\u3002")}
                 </div>
                 <div className="settings-groups">
                   <div className="settings-group-create">
                     <input
                       className="settings-input settings-input--compact"
                       value={newGroupName}
-                      placeholder="New group name"
+                      placeholder={t("New group name", "\u65b0\u5206\u7ec4\u540d\u79f0")}
                       onChange={(event) => setNewGroupName(event.target.value)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" && canCreateGroup) {
@@ -1445,19 +1463,19 @@ export function SettingsView({
                     </div>
                   ))}
                   {projects.length === 0 && (
-                    <div className="settings-empty">No projects yet.</div>
+                    <div className="settings-empty">{t("No projects yet.", "\u6682\u65e0\u9879\u76ee\u3002")}</div>
                   )}
                 </div>
               </section>
             )}
             {activeSection === "environments" && (
               <section className="settings-section">
-                <div className="settings-section-title">Environments</div>
+                <div className="settings-section-title">{t("Environments", "\u73af\u5883")}</div>
                 <div className="settings-section-subtitle">
-                  Configure per-project setup scripts that run after worktree creation.
+                  {t("Configure per-project setup scripts that run after worktree creation.", "\u914d\u7f6e\u6bcf\u4e2a\u9879\u76ee\u5728\u521b\u5efa\u5de5\u4f5c\u6811\u540e\u8fd0\u884c\u7684\u521d\u59cb\u5316\u811a\u672c\u3002")}
                 </div>
                 {mainWorkspaces.length === 0 ? (
-                  <div className="settings-empty">No projects yet.</div>
+                  <div className="settings-empty">{t("No projects yet.", "\u6682\u65e0\u9879\u76ee\u3002")}</div>
                 ) : (
                   <>
                     <div className="settings-field">
@@ -1465,7 +1483,7 @@ export function SettingsView({
                         className="settings-field-label"
                         htmlFor="settings-environment-project"
                       >
-                        Project
+                        {t("Project", "\u9879\u76ee")}
                       </label>
                       <select
                         id="settings-environment-project"
@@ -1486,9 +1504,9 @@ export function SettingsView({
                     </div>
 
                     <div className="settings-field">
-                      <div className="settings-field-label">Setup script</div>
+                      <div className="settings-field-label">{t("Setup script", "\u521d\u59cb\u5316\u811a\u672c")}</div>
                       <div className="settings-help">
-                        Runs once in a dedicated terminal after each new worktree is created.
+                        {t("Runs once in a dedicated terminal after each new worktree is created.", "\u6bcf\u6b21\u65b0\u5efa\u5de5\u4f5c\u6811\u540e\uff0c\u4f1a\u5728\u72ec\u7acb\u7ec8\u7aef\u4e2d\u6267\u884c\u4e00\u6b21\u3002")}
                       </div>
                       {environmentError ? (
                         <div className="settings-agents-error">{environmentError}</div>
@@ -1510,24 +1528,24 @@ export function SettingsView({
                               typeof navigator === "undefined" ? null : navigator.clipboard;
                             if (!clipboard?.writeText) {
                               pushErrorToast({
-                                title: "Copy failed",
+                                title: t("Copy failed", "\u590d\u5236\u5931\u8d25"),
                                 message:
-                                  "Clipboard access is unavailable in this environment. Copy the script manually instead.",
+                                  t("Clipboard access is unavailable in this environment. Copy the script manually instead.", "\u5f53\u524d\u73af\u5883\u65e0\u6cd5\u8bbf\u95ee\u526a\u8d34\u677f\uff0c\u8bf7\u624b\u52a8\u590d\u5236\u811a\u672c\u3002"),
                               });
                               return;
                             }
 
                             void clipboard.writeText(environmentDraftScript).catch(() => {
                               pushErrorToast({
-                                title: "Copy failed",
+                                title: t("Copy failed", "\u590d\u5236\u5931\u8d25"),
                                 message:
-                                  "Could not write to the clipboard. Copy the script manually instead.",
+                                  t("Could not write to the clipboard. Copy the script manually instead.", "\u65e0\u6cd5\u5199\u5165\u526a\u8d34\u677f\uff0c\u8bf7\u624b\u52a8\u590d\u5236\u811a\u672c\u3002"),
                               });
                             });
                           }}
                           disabled={environmentSaving || environmentDraftScript.length === 0}
                         >
-                          Copy
+                          {t("Copy", "\u590d\u5236")}
                         </button>
                         <button
                           type="button"
@@ -1535,7 +1553,7 @@ export function SettingsView({
                           onClick={() => setEnvironmentDraftScript(environmentSavedScript ?? "")}
                           disabled={environmentSaving || !environmentDirty}
                         >
-                          Reset
+                          {t("Reset", "\u91cd\u7f6e")}
                         </button>
                         <button
                           type="button"
@@ -1545,7 +1563,7 @@ export function SettingsView({
                           }}
                           disabled={environmentSaving || !environmentDirty}
                         >
-                          {environmentSaving ? "Saving..." : "Save"}
+                          {environmentSaving ? t("Saving...", "\u4fdd\u5b58\u4e2d...") : t("Save", "\u4fdd\u5b58")}
                         </button>
                       </div>
                     </div>
@@ -1555,17 +1573,17 @@ export function SettingsView({
             )}
             {activeSection === "display" && (
               <section className="settings-section">
-                <div className="settings-section-title">Display &amp; Sound</div>
+                <div className="settings-section-title">{t("Display & Sound", "\u663e\u793a\u4e0e\u58f0\u97f3")}</div>
                 <div className="settings-section-subtitle">
-                  Tune visuals and audio alerts to your preferences.
+                  {t("Tune visuals and audio alerts to your preferences.", "\u6309\u4f60\u7684\u504f\u597d\u8c03\u6574\u754c\u9762\u663e\u793a\u548c\u63d0\u793a\u97f3\u3002")}
                 </div>
-                <div className="settings-subsection-title">Display</div>
+                <div className="settings-subsection-title">{t("Display", "\u663e\u793a")}</div>
                 <div className="settings-subsection-subtitle">
-                  Adjust how the window renders backgrounds and effects.
+                  {t("Adjust how the window renders backgrounds and effects.", "\u8c03\u6574\u7a97\u53e3\u80cc\u666f\u4e0e\u89c6\u89c9\u6548\u679c\u7684\u663e\u793a\u65b9\u5f0f\u3002")}
                 </div>
                 <div className="settings-field">
                   <label className="settings-field-label" htmlFor="theme-select">
-                    Theme
+                    {t("Theme", "\u4e3b\u9898")}
                   </label>
                   <select
                     id="theme-select"
@@ -1844,7 +1862,7 @@ export function SettingsView({
             )}
             {activeSection === "composer" && (
               <section className="settings-section">
-                <div className="settings-section-title">Composer</div>
+                <div className="settings-section-title">{t("Composer", "\u8f93\u5165\u7f16\u8f91")}</div>
                 <div className="settings-section-subtitle">
                   Control helpers and formatting behavior inside the message editor.
                 </div>
@@ -2057,7 +2075,7 @@ export function SettingsView({
             )}
             {activeSection === "dictation" && (
               <section className="settings-section">
-                <div className="settings-section-title">Dictation</div>
+                <div className="settings-section-title">{t("Dictation", "\u8bed\u97f3\u8f93\u5165")}</div>
                 <div className="settings-section-subtitle">
                   Enable microphone dictation with on-device transcription.
                 </div>
@@ -2259,7 +2277,7 @@ export function SettingsView({
             )}
             {activeSection === "shortcuts" && (
               <section className="settings-section">
-                <div className="settings-section-title">Shortcuts</div>
+                <div className="settings-section-title">{t("Shortcuts", "\u5feb\u6377\u952e")}</div>
                 <div className="settings-section-subtitle">
                   Customize keyboard shortcuts for file actions, composer, panels, and navigation.
                 </div>
@@ -2733,7 +2751,7 @@ export function SettingsView({
             )}
             {activeSection === "open-apps" && (
               <section className="settings-section">
-                <div className="settings-section-title">Open in</div>
+                <div className="settings-section-title">{t("Open in", "\u6253\u5f00\u65b9\u5f0f")}</div>
                 <div className="settings-section-subtitle">
                   Customize the Open in menu shown in the title bar and file previews.
                 </div>
@@ -2943,7 +2961,7 @@ export function SettingsView({
             )}
             {activeSection === "git" && (
               <section className="settings-section">
-                <div className="settings-section-title">Git</div>
+                <div className="settings-section-title">{t("Git", "Git")}</div>
                 <div className="settings-section-subtitle">
                   Manage how diffs are loaded in the Git sidebar.
                 </div>
@@ -2993,7 +3011,7 @@ export function SettingsView({
             )}
             {activeSection === "codex" && (
               <section className="settings-section">
-                <div className="settings-section-title">Codex</div>
+                <div className="settings-section-title">{t("Codex", "Codex")}</div>
                 <div className="settings-section-subtitle">
                   Configure the Codex CLI used by CodexMonitor and validate the install.
                 </div>
@@ -3413,7 +3431,7 @@ export function SettingsView({
                       </div>
                     ))}
                     {projects.length === 0 && (
-                      <div className="settings-empty">No projects yet.</div>
+                      <div className="settings-empty">{t("No projects yet.", "\u6682\u65e0\u9879\u76ee\u3002")}</div>
                     )}
                   </div>
                 </div>
@@ -3422,7 +3440,7 @@ export function SettingsView({
             )}
             {activeSection === "features" && (
               <section className="settings-section">
-                <div className="settings-section-title">Features</div>
+                <div className="settings-section-title">{t("Features", "\u529f\u80fd\u7279\u6027")}</div>
                 <div className="settings-section-subtitle">
                   Manage stable and experimental Codex features.
                 </div>

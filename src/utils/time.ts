@@ -1,9 +1,9 @@
-export function formatRelativeTime(timestamp: number) {
+export function formatRelativeTime(timestamp: number, locale?: string) {
   const now = Date.now();
   const diffSeconds = Math.round((timestamp - now) / 1000);
   const absSeconds = Math.abs(diffSeconds);
   if (absSeconds < 5) {
-    return "now";
+    return locale?.toLowerCase().startsWith("zh") ? "\u521a\u521a" : "now";
   }
   if (absSeconds < 60) {
     const value = Math.max(1, Math.round(absSeconds));
@@ -26,10 +26,10 @@ export function formatRelativeTime(timestamp: number) {
     ranges.find((entry) => absSeconds >= entry.seconds) ||
     ranges[ranges.length - 1];
   if (!range) {
-    return "now";
+    return locale?.toLowerCase().startsWith("zh") ? "\u521a\u521a" : "now";
   }
   const value = Math.round(diffSeconds / range.seconds);
-  const formatter = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   return formatter.format(value, range.unit);
 }
 

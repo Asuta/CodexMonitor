@@ -2,6 +2,7 @@ import FolderOpen from "lucide-react/dist/esm/icons/folder-open";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import type { LocalUsageSnapshot } from "../../../types";
 import { formatRelativeTime } from "../../../utils/time";
+import type { AppLocale } from "../../../utils/locale";
 
 type LatestAgentRun = {
   message: string;
@@ -35,6 +36,8 @@ type HomeProps = {
   usageWorkspaceOptions: UsageWorkspaceOption[];
   onUsageWorkspaceChange: (workspaceId: string | null) => void;
   onSelectThread: (workspaceId: string, threadId: string) => void;
+  locale?: AppLocale;
+  onLocaleChange?: (locale: AppLocale) => void;
 };
 
 export function Home({
@@ -52,7 +55,26 @@ export function Home({
   usageWorkspaceOptions,
   onUsageWorkspaceChange,
   onSelectThread,
+  locale = "en",
+  onLocaleChange,
 }: HomeProps) {
+  const isZh = locale === "zh-CN";
+  const text = {
+    subtitle: isZh
+      ? "跨你的本地项目统一编排多个代理。"
+      : "Orchestrate agents across your local projects.",
+    language: isZh ? "语言" : "Language",
+    latestAgents: isZh ? "最新代理" : "Latest agents",
+    noAgentActivity: isZh
+      ? "暂无代理活动"
+      : "No agent activity yet",
+    noAgentActivityHint: isZh
+      ? "开始一个线程后，这里会显示最新回复。"
+      : "Start a thread to see the latest responses here.",
+    openProject: isZh ? "打开项目" : "Open Project",
+    addWorkspace: isZh ? "添加工作区" : "Add Workspace",
+    usageSnapshot: isZh ? "使用概览" : "Usage snapshot",
+  };
   const formatCompactNumber = (value: number | null | undefined) => {
     if (value === null || value === undefined) {
       return "--";
@@ -178,13 +200,25 @@ export function Home({
     <div className="home">
       <div className="home-hero">
         <div className="home-title">Codex Monitor</div>
-        <div className="home-subtitle">
-          Orchestrate agents across your local projects.
+        <div className="home-subtitle">{text.subtitle}</div>
+        <div className="home-language-switcher">
+          <label className="home-language-label" htmlFor="home-language-select">
+            {text.language}
+          </label>
+          <select
+            id="home-language-select"
+            className="home-language-select"
+            value={locale}
+            onChange={(event) => onLocaleChange?.(event.target.value as AppLocale)}
+          >
+            <option value="en">English</option>
+            <option value="zh-CN">{"\u4e2d\u6587"}</option>
+          </select>
         </div>
       </div>
       <div className="home-latest">
         <div className="home-latest-header">
-          <div className="home-latest-label">Latest agents</div>
+          <div className="home-latest-label">{text.latestAgents}</div>
         </div>
         {latestAgentRuns.length > 0 ? (
           <div className="home-latest-grid">
@@ -230,9 +264,9 @@ export function Home({
           </div>
         ) : (
           <div className="home-latest-empty">
-            <div className="home-latest-empty-title">No agent activity yet</div>
+            <div className="home-latest-empty-title">{text.noAgentActivity}</div>
             <div className="home-latest-empty-subtitle">
-              Start a thread to see the latest responses here.
+              {text.noAgentActivityHint}
             </div>
           </div>
         )}
@@ -246,7 +280,7 @@ export function Home({
           <span className="home-icon" aria-hidden>
             <FolderOpen size={18} />
           </span>
-          Open Project
+          {text.openProject}
         </button>
         <button
           className="home-button secondary"
@@ -256,12 +290,12 @@ export function Home({
           <span className="home-icon" aria-hidden>
             +
           </span>
-          Add Workspace
+          {text.addWorkspace}
         </button>
       </div>
       <div className="home-usage">
         <div className="home-section-header">
-          <div className="home-section-title">Usage snapshot</div>
+          <div className="home-section-title">{text.usageSnapshot}</div>
           <div className="home-section-meta-row">
             {updatedLabel && <div className="home-section-meta">{updatedLabel}</div>}
             <button
