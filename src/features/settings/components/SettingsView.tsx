@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ask, open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
@@ -335,7 +335,366 @@ export function SettingsView({
 }: SettingsViewProps) {
   const isZh = locale === "zh-CN";
   const t = (en: string, zh: string) => (isZh ? zh : en);
+  const settingsWindowRef = useRef<HTMLDivElement | null>(null);
+  const originalTextRef = useRef<WeakMap<Text, string>>(new WeakMap());
+  const originalAttrRef = useRef<WeakMap<Element, Map<string, string>>>(new WeakMap());
+  const settingsTranslations = useMemo(
+    () =>
+      new Map<string, string>([
+        ["Settings", "\u8bbe\u7f6e"],
+        ["Close settings", "\u5173\u95ed\u8bbe\u7f6e"],
+        ["Projects", "\u9879\u76ee"],
+        ["Environments", "\u73af\u5883"],
+        ["Display & Sound", "\u663e\u793a\u4e0e\u58f0\u97f3"],
+        ["Composer", "\u8f93\u5165\u7f16\u8f91"],
+        ["Dictation", "\u8bed\u97f3\u8f93\u5165"],
+        ["Shortcuts", "\u5feb\u6377\u952e"],
+        ["Open in", "\u6253\u5f00\u65b9\u5f0f"],
+        ["Features", "\u529f\u80fd\u7279\u6027"],
+        ["Language", "\u8bed\u8a00"],
+        ["Group related workspaces and reorder projects within each group.", "\u5c06\u76f8\u5173\u5de5\u4f5c\u533a\u5206\u7ec4\uff0c\u5e76\u5728\u6bcf\u4e2a\u5206\u7ec4\u5185\u8c03\u6574\u9879\u76ee\u987a\u5e8f\u3002"],
+        ["Create group labels for related repositories.", "\u4e3a\u76f8\u5173\u4ed3\u5e93\u521b\u5efa\u5206\u7ec4\u6807\u7b7e\u3002"],
+        ["New group name", "\u65b0\u5206\u7ec4\u540d\u79f0"],
+        ["No projects yet.", "\u6682\u65e0\u9879\u76ee\u3002"],
+        ["Project", "\u9879\u76ee"],
+        ["Setup script", "\u521d\u59cb\u5316\u811a\u672c"],
+        ["Configure per-project setup scripts that run after worktree creation.", "\u914d\u7f6e\u6bcf\u4e2a\u9879\u76ee\u5728\u521b\u5efa\u5de5\u4f5c\u6811\u540e\u8fd0\u884c\u7684\u521d\u59cb\u5316\u811a\u672c\u3002"],
+        ["Runs once in a dedicated terminal after each new worktree is created.", "\u6bcf\u6b21\u65b0\u5efa\u5de5\u4f5c\u6811\u540e\uff0c\u4f1a\u5728\u72ec\u7acb\u7ec8\u7aef\u4e2d\u6267\u884c\u4e00\u6b21\u3002"],
+        ["Tune visuals and audio alerts to your preferences.", "\u6309\u4f60\u7684\u504f\u597d\u8c03\u6574\u754c\u9762\u663e\u793a\u548c\u63d0\u793a\u97f3\u3002"],
+        ["Display", "\u663e\u793a"],
+        ["Adjust how the window renders backgrounds and effects.", "\u8c03\u6574\u7a97\u53e3\u80cc\u666f\u4e0e\u89c6\u89c9\u6548\u679c\u7684\u663e\u793a\u65b9\u5f0f\u3002"],
+        ["Theme", "\u4e3b\u9898"],
+        ["System", "\u8ddf\u968f\u7cfb\u7edf"],
+        ["Dark", "\u6df1\u8272"],
+        ["Light", "\u6d45\u8272"],
+        ["Scale", "\u7f29\u653e"],
+        ["Copy", "\u590d\u5236"],
+        ["Reset", "\u91cd\u7f6e"],
+        ["Save", "\u4fdd\u5b58"],
+        ["Saving...", "\u4fdd\u5b58\u4e2d..."],
+        ["Cancel", "\u53d6\u6d88"],
+        ["Apply", "\u5e94\u7528"],
+        ["Browse", "\u6d4f\u89c8"],
+        ["Download", "\u4e0b\u8f7d"],
+        ["Remove", "\u79fb\u9664"],
+        ["Run doctor", "\u8fd0\u884c\u8bca\u65ad"],
+        ["Copy failed", "\u590d\u5236\u5931\u8d25"],
+        ["Clipboard access is unavailable in this environment. Copy the script manually instead.", "\u5f53\u524d\u73af\u5883\u65e0\u6cd5\u8bbf\u95ee\u526a\u8d34\u677f\uff0c\u8bf7\u624b\u52a8\u590d\u5236\u811a\u672c\u3002"],
+        ["Enable microphone dictation with on-device transcription.", "启用本地转写的麦克风语音输入。"],
+        ["Enable dictation", "启用语音输入"],
+        ["Downloads the selected Whisper model on first use.", "首次使用时会下载所选 Whisper 模型。"],
+        ["Dictation model", "语音模型"],
+        ["Preferred dictation language", "首选语音识别语言"],
+        ["Auto-detect only", "仅自动检测"],
+        ["Auto-detect stays on; this nudges the decoder toward your preference.", "保持自动检测开启；这会让解码器更倾向你的语言偏好。"],
+        ["Hold-to-dictate key", "按住说话快捷键"],
+        ["Hold the key to start dictation, release to stop and process.", "按住按键开始输入，松开后停止并处理。"],
+        ["Model status", "模型状态"],
+        ["Model not downloaded yet.", "模型尚未下载。"],
+        ["Download model", "下载模型"],
+        ["Model downloaded and ready.", "模型已下载，可以使用。"],
+        ["Model removed.", "模型已移除。"],
+        ["Downloading model...", "正在下载模型..."],
+        ["Balanced default.", "均衡默认。"],
+        ["Fastest, least accurate.", "速度最快，准确率较低。"],
+        ["Better accuracy.", "更高准确率。"],
+        ["High accuracy.", "高准确率。"],
+        ["Best accuracy, heavy download.", "最佳准确率，下载较大。"],
+        ["English", "英语"],
+        ["Chinese", "中文"],
+        ["Japanese", "日语"],
+        ["Korean", "韩语"],
+        ["French", "法语"],
+        ["German", "德语"],
+        ["Spanish", "西班牙语"],
+        ["Portuguese", "葡萄牙语"],
+        ["Italian", "意大利语"],
+        ["Russian", "俄语"],
+        ["Hindi", "印地语"],
+        ["Arabic", "阿拉伯语"],
+        ["Turkish", "土耳其语"],
+        ["Vietnamese", "越南语"],
+        ["Thai", "泰语"],
+        ["Polish", "波兰语"],
+        ["Dutch", "荷兰语"],
+        ["Ukrainian", "乌克兰语"],
+        ["Indonesian", "印尼语"],
+        ["Czech", "捷克语"],
+        ["Romanian", "罗马尼亚语"],
+        ["Hungarian", "匈牙利语"],
+        ["Swedish", "瑞典语"],
+        ["Norwegian", "挪威语"],
+        ["Danish", "丹麦语"],
+        ["Finnish", "芬兰语"],
+        ["Hebrew", "希伯来语"],
+        ["Greek", "希腊语"],
+        ["Catalan", "加泰罗尼亚语"],
+        ["Malay", "马来语"],
+        ["Downloads", "下载"],
+        ["Download size:", "下载大小："],
+        ["Hold key", "按键"],
+        ["Alt", "Alt"],
+        ["Ctrl", "Ctrl"],
+        ["Shift", "Shift"],
+        ["Meta", "Meta"],
+        ["No hold key", "不使用按住键"],
+        ["Could not access microphone.", "无法访问麦克风。"],
+        ["Codex", "Codex"],
+        ["Loading?", "加载中?"],
+        ["Not found", "未找到"],
+        ["Not set", "未设置"],
+        ["Delete", "删除"],
+        ["Delete project", "删除项目"],
+        ["Delete group", "删除分组"],
+        ["Delete Group", "删除分组"],
+        ["Create", "创建"],
+        ["Move up", "上移"],
+        ["Move down", "下移"],
+        ["Move group up", "分组上移"],
+        ["Move group down", "分组下移"],
+        ["Move project up", "项目上移"],
+        ["Move project down", "项目下移"],
+        ["Remote backend host", "远程后端主机"],
+        ["Remote backend token", "远程后端令牌"],
+        ["Token (optional)", "令牌（可选）"],
+        ["Interface scale", "界面缩放"],
+        ["Windows", "Windows"],
+        ["Personality", "个性风格"],
+        ["Friendly", "友好"],
+        ["Pragmatic", "务实"],
+        ["Default (no helpers)", "默认（无辅助）"],
+        ["Helpful", "帮助型"],
+        ["Smart", "智能"],
+        ["Type shortcut", "输入快捷键"],
+        ["File", "文件"],
+        ["Panels", "面板"],
+        ["Navigation", "导航"],
+        ["Option", "选项"],
+        ["Label", "标签"],
+        ["App name", "应用名称"],
+        ["Command", "命令"],
+        ["Args", "参数"],
+        ["App name required", "请填写应用名称"],
+        ["Label required", "请填写标签"],
+        ["Command required", "请填写命令"],
+        ["Complete required fields", "请先填写必填项"],
+        ["New App", "新增应用"],
+        ["Remove app", "移除应用"],
+        ["Apps open via `open -a` with optional args.", "应用通过 `open -a` 方式打开，可附加参数。"],
+        ["Apps run as an executable with optional args.", "应用以可执行文件方式运行，可附加参数。"],
+        ["Global AGENTS.md", "全局 AGENTS.md"],
+        ["Global config.toml", "全局 config.toml"],
+        ["Truncated", "已截断"],
+        ["Unable to open config.", "无法打开配置。"],
+        ["Could not access microphone.", "无法访问麦克风。"],
+        ["Ready for dictation.", "语音输入已就绪。"],
+        ["Download error.", "下载失败。"],
+        ["Downloads", "下载"],
+        ["Download size:", "下载大小："],
+        ["No hold key", "不使用按住键"],
+        ["Hold key", "按键"],
+        ["default", "默认"],
+        ["running", "运行中"],
+        ["failed", "失败"],
+        ["ready", "已就绪"],
+        ["done", "已完成"],
+        ["true", "是"],
+        ["false", "否"],
+        ["No groups yet.", "尚无群组。"],
+        ["Add group", "新增分组"],
+        ["Choose?", "\u9009\u62e9\u2026"],
+        ["Assign projects to groups and adjust their order.", "将项目分配给组并调整其顺序。"],
+        ["Copies folder", "复制文件夹"],
+        ["Adjusts code and diff text size.", "调整代码和差异文本大小。"],
+        ["Control notification audio alerts.", "控制通知音频警报。"],
+        ["Test sound", "测试声音"],
+        ["Test notification", "测试提醒"],
+        ["Control helpers and formatting behavior inside the message editor.", "在消息编辑器中控制助手和格式化行为。"],
+        ["Choose a starting point and fine-tune the toggles below.", "选择一个起点并微调下面的切换开关。"],
+        ["Preset", "\u9884\u8bbe"],
+        ["Presets update the toggles below. Customize any setting after selecting.", "预设值更新下面的切换开关。选择后自定义任何设置。"],
+        ["Typing ``` then Space inserts a fenced block.", "键入“” ，然后Space插入一个带围栏的块。"],
+        ["Use Enter to expand ``` lines when enabled.", "启用后，使用Enter扩展“”行。"],
+        ["Allows ```lang + Space to include a language.", "允许`` `lang + Space包含语言。"],
+        ["Wraps selected text when creating a fence.", "创建围栏时环绕所选文本。"],
+        ["Wraps multi-line paste inside a fenced block.", "将多行粘贴包裹在围栏块内。"],
+        ["Wraps long single-line code snippets on paste.", "在粘贴时包装长单行代码片段。"],
+        ["Continues numbered and bulleted lists when the line has content.", "当行有内容时，继续编号和项目符号列表。"],
+        ["Copy blocks without fences", "复制没有围栏的块"],
+        ["Display what is left instead of what is used.", "显示剩下的内容，而不是使用的内容。"],
+        ["Show remaining Codex limits", "\u663e\u793a Codex \u5269\u4f59\u9650\u989d"],
+        ["Off", "\u5173\u95ed"],
+        ["Cancel download", "不再下载"],
+        ["Remove model", "移除模型"],
+        ["Customize keyboard shortcuts for file actions, composer, panels, and navigation.", "自定义文件操作、撰写器、面板和导航的键盘快捷方式。"],
+        ["Create agents and worktrees from the keyboard.", "从键盘创建座席和工作树。"],
+        ["Toggle sidebars and panels.", "切换侧边栏和面板。"],
+        ["Cycle between model, access, reasoning, and collaboration modes.", "在模型、访问、推理和协作模式之间循环。"],
+        ["Cycle between agents and workspaces.", "在代理和工作区之间循环。"],
+        ["Customize the Open in menu shown in the title bar and file previews.", "自定义标题栏和文件预览中显示的“打开方式”菜单。"],
+        ["Add app", "添加应用程序"],
+        ["Commands receive the selected path as the final argument.", "命令接收所选路径作为最终参数。"],
+        ["Manage how diffs are loaded in the Git sidebar.", "管理差异在Git侧边栏中的加载方式。"],
+        ["Make viewing git diff faster.", "使查看git diff更快。"],
+        ["Hides whitespace-only changes in local and commit diffs.", "在本地和提交差异中隐藏仅限空白的更改。"],
+        ["Configure the Codex CLI used by CodexMonitor and validate the install.", "配置CodexMonitor使用的Codex CLI并验证安装。"],
+        ["Leave empty to use the system PATH resolution.", "留空以使用系统路径分辨率。"],
+        ["Extra flags passed before ", "之前传递的额外标记 "],
+        [". Use quotes for values with spaces.", "。对带空格的值使用引号。"],
+        ["Default access mode", "\u9ed8\u8ba4\u8bbf\u95ee\u6a21\u5f0f"],
+        ["Read only", "只读"],
+        ["On-request", "请求"],
+        ["Full access", "完全访问"],
+        ["Review mode", "\u5ba1\u67e5\u6a21\u5f0f"],
+        ["Inline (same thread)", "\u5185\u8054\uff08\u540c\u4e00\u7ebf\u7a0b\uff09"],
+        ["Detached (new review thread)", "\u5206\u79bb\uff08\u65b0\u5ba1\u67e5\u7ebf\u7a0b\uff09"],
+        ["Choose whether ", "选择是否 "],
+        ["runs in the current thread or a detached review thread.", "在当前线程或分离的评论线程中运行。"],
+        ["Backend mode", "后端模式"],
+        ["Local (default)", "\u672c\u5730\uff08\u9ed8\u8ba4\uff09"],
+        ["Remote (daemon)", "远程（守护程序）"],
+        ["Remote backend", "远程后端"],
+        ["Remote mode connects to a separate daemon running the backend on another machine (e.g. WSL2/Linux).", "远程模式连接到另一台机器上运行后端的单独守护程序（例如WSL2/Linux ）。"],
+        ["Start the daemon separately and point CodexMonitor to it (host:port + token).", "单独启动守护程序，并将CodexMonitor指向它（主机：端口+令牌）。"],
+        ["Manage stable and experimental Codex features.", "管理稳定和实验性的Codex功能。"],
+        ["Feature settings are stored in the default CODEX_HOME config.toml.", "功能设置存储在默认的CODEX_HOME config.toml中。"],
+        ["Workspace overrides are not updated.", "工作区覆盖未更新。"],
+        ["Open the Codex config in ", "\u5728\u4ee5\u4e0b\u8def\u5f84\u6253\u5f00 Codex \u914d\u7f6e\uff1a"],
+        ["Stable Features", "稳定的功能"],
+        ["Production-ready features enabled by default.", "默认情况下启用生产就绪功能。"],
+        ["Collaboration modes", "协作模式"],
+        ["Enable collaboration mode presets (Code, Plan).", "启用协作模式预设（代码、计划）。"],
+        ["Choose Codex communication style (writes top-level ", "选择Codex沟通风格（写入顶级 "],
+        ["in config.toml).", "在config.toml中）。"],
+        ["Steer mode", "转向模式"],
+        ["Send messages immediately. Use Tab to queue while a run is active.", "立即发送消息。在运行处于活动状态时，使用Tab排队。"],
+        ["Background terminal", "后台终端"],
+        ["Run long-running terminal commands in the background.", "在后台运行长时间运行的终端命令。"],
+        ["Experimental Features", "实验性功能"],
+        ["Preview features that may change or be removed.", "预览可能更改或删除的功能。"],
+        ["Enable multi-agent collaboration tools in Codex.", "在Codex中启用多代理协作工具。"],
+        ["Enable ChatGPT apps/connectors and the ", "\u542f\u7528 ChatGPT \u5e94\u7528/\u8fde\u63a5\u5668\uff0c\u4ee5\u53ca "],
+        ["command.", "\u547d\u4ee4\u3002"],
+        ["Config file", "配置文件"],
+        ["Reduce transparency", "減少透明"],
+        ["Notification sounds", "通知音效"],
+        ["System notifications", "系统通知"],
+        ["Code font family", "代码字体系列"],
+        ["Code font size", "代码字体大小"],
+        ["UI font family", "UI字体"],
+        ["Workspace overrides", "工作区覆盖"],
+        ["Dim", "暗光"],
+        ["Stored at ", "储存在 "],
+        ["Add global instructions for Codex agents?", "添加针对Codex代理的全局说明？"],
+        ["Edit the global Codex config.toml?", "编辑全局Codex config.toml ？"],
+        ["CODEX_HOME override", "CODEX_HOME覆盖"],
+        ["Codex args override", "Codex参数覆盖"],
+        ["Codex binary override", "Codex二进制覆盖"],
+        ["Applies to all UI text. Leave empty to use the default system font stack.", "适用于所有UI文本。留空以使用默认系统字体堆栈。"],
+        ["Applies to git diffs and other mono-spaced readouts.", "适用于git diffs和其他单间距读数。"],
+        ["Archive active thread", "存档活动线程"],
+        ["Auto-wrap code-like single lines", "自动换行，类似于单行代码"],
+        ["Auto-wrap multi-line paste", "自动包装多行粘贴"],
+        ["Branch switcher", "分支切换器"],
+        ["Choose whether", "\u9009\u62e9\u662f\u5426"],
+        ["Choose...", "\u9009\u62e9\u2026"],
+        ["Code fences", "代码围栏"],
+        ["Continue lists on Shift+Enter", "在Shift + Enter上继续列表"],
+        ["Cycle access mode", "循环访问模式"],
+        ["Cycle collaboration mode", "循环协作模式"],
+        ["Cycle model", "\u5faa\u73af\u6a21\u578b"],
+        ["Cycle reasoning mode", "循环推理模式"],
+        ["Default Codex args", "默认Codex参数"],
+        ["Default Codex path", "默认Codex路径"],
+        ["Expand fences on Enter", "在Enter键上展开围栏"],
+        ["Expand fences on Space", "\u6309 Space \u5c55\u5f00\u56f4\u680f"],
+        ["Extra flags passed before", "之前传递的额外标记"],
+        ["Ignore whitespace changes", "忽略空格更改"],
+        ["New Agent", "\u65b0\u5efa Agent"],
+        ["New Clone Agent", "新建克隆代理"],
+        ["New Worktree Agent", "新建工作树代理"],
+        ["Next agent", "\u4e0b\u4e00\u4e2a Agent"],
+        ["Next workspace", "下一个工作区"],
+        ["Play a sound when a long-running agent finishes while the window is unfocused.", "当窗口未对焦时，长时间运行的代理结束时播放声音。"],
+        ["Preload git diffs", "预加载git diffs"],
+        ["Previous agent", "\u4e0a\u4e00\u4e2a Agent"],
+        ["Previous workspace", "先前的工作区"],
+        ["Show a system notification when a long-running agent finishes while the window is unfocused.", "当窗口未聚焦时，长时间运行的座席完成时显示系统通知。"],
+        ["Stop active run", "停止活动运行"],
+        ["Stored at", "储存在"],
+        ["Support language tags", "\u652f\u6301\u8bed\u8a00\u6807\u7b7e"],
+        ["Toggle debug panel", "切换调试面板"],
+        ["Toggle git sidebar", "切换git侧边栏"],
+        ["Toggle projects sidebar", "切换项目侧边栏"],
+        ["Toggle terminal panel", "\u5207\u6362\u7ec8\u7aef\u9762\u677f"],
+        ["Use solid surfaces instead of glass.", "使用实心表面代替玻璃。"],
+        ["Wrap selection in fences", "用栅栏包裹所选内容"],
+        ["Clear", "\u6e05\u9664"],
+        ["Choose\u2026", "\u9009\u62e9\u2026"],
+        ["Add global instructions for Codex agents\u2026", "\u4e3a Codex agents \u6dfb\u52a0\u5168\u5c40\u8bf4\u660e\u2026"],
+        ["Edit the global Codex config.toml\u2026", "\u7f16\u8f91\u5168\u5c40 Codex config.toml\u2026"],
+        ["Git", "Git"],
+      ]),
+    [],
+  );
+
+  const translateValue = useCallback(
+    (value: string) => {
+      let output = value;
+      settingsTranslations.forEach((zh, en) => {
+        output = output.split(en).join(zh);
+      });
+      return output;
+    },
+    [settingsTranslations],
+  );
+
   const [activeSection, setActiveSection] = useState<CodexSection>("projects");
+
+  useEffect(() => {
+    const root = settingsWindowRef.current;
+    if (!root) {
+      return;
+    }
+
+    const blocked = new Set(["SCRIPT", "STYLE"]);
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+      const textNode = node as Text;
+      const parent = textNode.parentElement;
+      const tagName = parent?.tagName ?? "";
+      if (!blocked.has(tagName)) {
+        const original = originalTextRef.current.get(textNode) ?? (textNode.nodeValue ?? "");
+        if (!originalTextRef.current.has(textNode)) {
+          originalTextRef.current.set(textNode, original);
+        }
+        textNode.nodeValue = isZh ? translateValue(original) : original;
+      }
+      node = walker.nextNode();
+    }
+
+    const attrs = ["placeholder", "title", "aria-label"] as const;
+    root.querySelectorAll<HTMLElement>("*").forEach((el) => {
+      let attrMap = originalAttrRef.current.get(el);
+      if (!attrMap) {
+        attrMap = new Map<string, string>();
+        originalAttrRef.current.set(el, attrMap);
+      }
+      attrs.forEach((attr) => {
+        const current = el.getAttribute(attr);
+        if (current == null) {
+          return;
+        }
+        if (!attrMap!.has(attr)) {
+          attrMap!.set(attr, current);
+        }
+        const original = attrMap!.get(attr) ?? current;
+        el.setAttribute(attr, isZh ? translateValue(original) : original);
+      });
+    });
+    }, [activeSection, isZh, translateValue]);
   const [environmentWorkspaceId, setEnvironmentWorkspaceId] = useState<string | null>(
     null,
   );
@@ -1147,7 +1506,7 @@ export function SettingsView({
   return (
     <div className="settings-overlay" role="dialog" aria-modal="true">
       <div className="settings-backdrop" onClick={onClose} />
-      <div className="settings-window">
+      <div className="settings-window" ref={settingsWindowRef}>
         <div className="settings-titlebar">
           <div className="settings-title">{t("Settings", "\u8bbe\u7f6e")}</div>
           <button
