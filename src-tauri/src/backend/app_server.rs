@@ -18,7 +18,7 @@ use crate::codex::args::parse_codex_args;
 use crate::types::WorkspaceEntry;
 
 #[cfg(target_os = "windows")]
-use crate::shared::process_core::{build_cmd_c_command, resolve_windows_executable};
+use crate::shared::process_core::resolve_windows_executable;
 
 fn extract_thread_id(value: &Value) -> Option<String> {
     let params = value.get("params")?;
@@ -196,27 +196,13 @@ pub(crate) fn build_codex_command_with_bin(
     let mut command = {
         let bin_trimmed = bin.trim();
         let resolved = resolve_windows_executable(bin_trimmed, path_env.as_deref());
-        let resolved_path = resolved
-            .as_deref()
-            .unwrap_or_else(|| Path::new(bin_trimmed));
-        let ext = resolved_path
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .map(|ext| ext.to_ascii_lowercase());
+        let resolved_path = resolved.as_deref().unwrap_or_else(|| Path::new(bin_trimmed));
 
-        if matches!(ext.as_deref(), Some("cmd") | Some("bat")) {
-            let mut command = tokio_command("cmd");
-            let command_line = build_cmd_c_command(resolved_path, &command_args)?;
-            command.arg("/D");
-            command.arg("/S");
-            command.arg("/C");
-            command.arg(command_line);
-            command
-        } else {
-            let mut command = tokio_command(resolved_path);
-            command.args(command_args);
-            command
-        }
+        // Let CreateProcess handle .cmd/.bat/.exe resolution directly. Wrapping
+        // with cmd /C here can over-escape nested quotes and break valid paths.
+        let mut command = tokio_command(resolved_path);
+        command.args(command_args);
+        command
     };
 
     #[cfg(not(target_os = "windows"))]

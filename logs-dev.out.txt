@@ -1,0 +1,21 @@
+
+> codex-monitor@0.7.42 tauri
+> tauri dev
+
+
+> codex-monitor@0.7.42 predev
+> npm run sync:material-icons
+
+
+> codex-monitor@0.7.42 sync:material-icons
+> node scripts/sync-material-icons.mjs
+
+[sync:material-icons] synced icons to D:\Project\codexmoniter\CodexMonitor\public\assets\material-icons
+
+> codex-monitor@0.7.42 dev
+> vite
+
+
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m185[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m1420[22m/[39m

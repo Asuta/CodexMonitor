@@ -1,0 +1,32 @@
+     Running BeforeDevCommand (`npm run dev`)
+     Running DevCommand (`cargo  run --no-default-features --color always --`)
+        Info Watching D:\Project\codexmoniter\CodexMonitor\src-tauri for changes...
+[1m[92m   Compiling[0m bindgen v0.69.5
+[1m[96m    Building[0m [=======================> ] 562/569: bindgen                                                             [1m[92m   Compiling[0m whisper-rs-sys v0.10.0
+[1m[96m    Building[0m [=======================> ] 563/569: whisper…[1m[96m    Building[0m [=======================> ] 564/569: whisper…[1m[96m    Building[0m [=======================> ] 565/569: whisper…                                                            [1m[92m   Compiling[0m whisper-rs v0.12.0
+[1m[96m    Building[0m [=======================> ] 565/569: whisper…[1m[96m    Building[0m [=======================> ] 566/569: whisper…                                                            [1m[92m   Compiling[0m codex-monitor v0.1.0 (D:\Project\codexmoniter\CodexMonitor\src-tauri)
+[1m[96m    Building[0m [=======================> ] 567/569: codex-m…                                                            [1m[93mwarning[0m[1m[97m: unused variable: `app_handle`[0m
+   [1m[96m--> [0msrc\lib.rs:174:14
+    [1m[96m|[0m
+[1m[96m174[0m [1m[96m|[0m     app.run(|app_handle, event| {
+    [1m[96m|[0m              [1m[93m^^^^^^^^^^[0m [1m[93mhelp: if this is intentional, prefix it with an underscore: `_app_handle`[0m
+    [1m[96m|[0m
+    [1m[96m= [0m[1m[97mnote[0m: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+[1m[96m    Building[0m [=======================> ] 567/569: codex-m…                                                            [1m[93mwarning[0m[1m[97m: unused variable: `event`[0m
+   [1m[96m--> [0msrc\lib.rs:174:26
+    [1m[96m|[0m
+[1m[96m174[0m [1m[96m|[0m     app.run(|app_handle, event| {
+    [1m[96m|[0m                          [1m[93m^^^^^[0m [1m[93mhelp: if this is intentional, prefix it with an underscore: `_event`[0m
+
+[1m[93mwarning[0m[1m[97m: unused variable: `event`[0m
+  [1m[96m--> [0msrc\lib.rs:43:35
+   [1m[96m|[0m
+[1m[96m43[0m [1m[96m|[0m         .on_window_event(|window, event| {
+   [1m[96m|[0m                                   [1m[93m^^^^^[0m [1m[93mhelp: if this is intentional, prefix it with an underscore: `_event`[0m
+
+[1m[96m    Building[0m [=======================> ] 567/569: codex-m…                                                            [1m[93mwarning[0m: `codex-monitor` (lib) generated 3 warnings (run `cargo fix --lib -p codex-monitor` to apply 3 suggestions)
+[1m[96m    Building[0m [=======================> ] 568/569: codex-m…                                                            [1m[91merror[0m: failed to remove file `D:\Project\codexmoniter\CodexMonitor\src-tauri\target\debug\codex-monitor.exe`
+
+Caused by:
+  拒绝访问。 (os error 5)
