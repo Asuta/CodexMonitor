@@ -8,6 +8,7 @@ use crate::dictation::DictationState;
 use crate::shared::codex_core::CodexLoginCancelState;
 use crate::storage::{read_settings, read_workspaces};
 use crate::types::{AppSettings, WorkspaceEntry};
+use crate::web_companion::WebCompanionState;
 
 pub(crate) struct AppState {
     pub(crate) workspaces: Mutex<HashMap<String, WorkspaceEntry>>,
@@ -15,6 +16,7 @@ pub(crate) struct AppState {
     pub(crate) terminal_sessions:
         Mutex<HashMap<String, Arc<crate::terminal::TerminalSession>>>,
     pub(crate) remote_backend: Mutex<Option<crate::remote_backend::RemoteBackend>>,
+    pub(crate) web_companion: Mutex<Option<WebCompanionState>>,
     pub(crate) storage_path: PathBuf,
     pub(crate) settings_path: PathBuf,
     pub(crate) app_settings: Mutex<AppSettings>,
@@ -37,6 +39,7 @@ impl AppState {
             sessions: Mutex::new(HashMap::new()),
             terminal_sessions: Mutex::new(HashMap::new()),
             remote_backend: Mutex::new(None),
+            web_companion: Mutex::new(None),
             storage_path,
             settings_path,
             app_settings: Mutex::new(app_settings),
@@ -45,3 +48,5 @@ impl AppState {
         }
     }
 }
+
+

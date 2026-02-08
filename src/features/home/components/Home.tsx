@@ -1,5 +1,8 @@
 import FolderOpen from "lucide-react/dist/esm/icons/folder-open";
+import Globe from "lucide-react/dist/esm/icons/globe";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import { openWebCompanion } from "../../../services/tauri";
 import type { LocalUsageSnapshot } from "../../../types";
 import { formatRelativeTime } from "../../../utils/time";
 import type { AppLocale } from "../../../utils/locale";
@@ -73,6 +76,7 @@ export function Home({
       : "Start a thread to see the latest responses here.",
     openProject: isZh ? "打开项目" : "Open Project",
     addWorkspace: isZh ? "添加工作区" : "Add Workspace",
+    webCompanion: isZh ? "网页控制台" : "Web Companion",
     usageSnapshot: isZh ? "使用概览" : "Usage snapshot",
   };
   const formatCompactNumber = (value: number | null | undefined) => {
@@ -150,6 +154,14 @@ export function Home({
       month: "short",
       day: "numeric",
     }).format(date);
+  };
+
+  const handleOpenWebCompanion = () => {
+    void openWebCompanion()
+      .then((url) => openUrl(url))
+      .catch((error) => {
+        console.error("Failed to open web companion.", error);
+      });
   };
 
   const usageTotals = localUsageSnapshot?.totals ?? null;
@@ -291,6 +303,16 @@ export function Home({
             +
           </span>
           {text.addWorkspace}
+        </button>
+        <button
+          className="home-button secondary"
+          onClick={handleOpenWebCompanion}
+          data-tauri-drag-region="false"
+        >
+          <span className="home-icon" aria-hidden>
+            <Globe size={18} />
+          </span>
+          {text.webCompanion}
         </button>
       </div>
       <div className="home-usage">

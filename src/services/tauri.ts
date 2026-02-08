@@ -72,6 +72,10 @@ export async function getCodexConfigPath(): Promise<string> {
   return invoke<string>("get_codex_config_path");
 }
 
+export async function openWebCompanion(): Promise<string> {
+  return invoke<string>("open_web_companion");
+}
+
 export type TextFileResponse = {
   exists: boolean;
   content: string;
@@ -845,3 +849,4 @@ export async function sendNotification(
 
   await attemptFallback();
 }
+

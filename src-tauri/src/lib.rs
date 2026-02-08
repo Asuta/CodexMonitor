@@ -24,6 +24,7 @@ mod types;
 mod utils;
 mod window;
 mod workspaces;
+mod web_companion;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -167,7 +168,8 @@ pub fn run() {
             dictation::dictation_cancel,
             local_usage::local_usage_snapshot,
             notifications::is_macos_debug_build,
-            notifications::send_notification_fallback
+            notifications::send_notification_fallback,
+            web_companion::open_web_companion
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -182,3 +184,5 @@ pub fn run() {
         }
     });
 }
+
+
