@@ -13,6 +13,7 @@
     "window-state:default",
     "liquid-glass:default",
     "notification:default",
+    "mcp-bridge:default",
     "core:window:allow-set-effects",
     "core:window:allow-start-dragging"
   ]

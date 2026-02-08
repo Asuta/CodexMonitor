@@ -1,5 +1,6 @@
 {
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "Codex Monitor",
