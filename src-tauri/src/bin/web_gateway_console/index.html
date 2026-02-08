@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CodexMonitor Browser Console</title>
+    <link rel="stylesheet" href="/console/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>CodexMonitor Browser Console</h1>
+        <p>LAN realtime status + remote interaction for local daemon.</p>
+      </div>
+      <div class="status-group">
+        <span id="http-status" class="badge badge-warn">HTTP: idle</span>
+        <span id="ws-status" class="badge badge-warn">WS: disconnected</span>
+      </div>
+    </header>
+
+    <section class="panel auth-panel">
+      <h2>Gateway Auth</h2>
+      <div class="row">
+        <label for="token-input">API Token</label>
+        <input id="token-input" type="password" placeholder="web-change-me" />
+      </div>
+      <div class="row row-actions">
+        <button id="save-token-btn">Save Token</button>
+        <button id="clear-token-btn" class="button-muted">Clear Token</button>
+        <button id="ping-btn">Check Health</button>
+        <button id="connect-ws-btn">Connect Realtime</button>
+        <button id="disconnect-ws-btn" class="button-muted">Disconnect</button>
+      </div>
+      <p id="auth-hint" class="hint"></p>
+    </section>
+
+    <main class="layout">
+      <section class="panel column">
+        <h2>Drawings / Workspaces</h2>
+        <div class="row row-actions">
+          <button id="refresh-drawings-btn">Refresh Overview</button>
+          <button id="refresh-workspaces-btn">Refresh Workspaces</button>
+        </div>
+        <div id="drawings-overview" class="overview"></div>
+        <div class="row">
+          <label for="workspace-select">Active Workspace</label>
+          <select id="workspace-select"></select>
+        </div>
+        <div class="row row-actions">
+          <button id="refresh-threads-btn">Refresh Threads</button>
+          <button id="start-thread-btn">Start Thread</button>
+        </div>
+        <div id="threads-list" class="thread-list"></div>
+      </section>
+
+      <section class="panel column">
+        <h2>Interaction</h2>
+        <div class="row">
+          <label for="thread-id-input">Thread ID</label>
+          <input id="thread-id-input" type="text" placeholder="Select a thread" />
+        </div>
+        <div class="row">
+          <label for="access-mode-select">Access Mode</label>
+          <select id="access-mode-select">
+            <option value="current">current</option>
+            <option value="read-only">read-only</option>
+            <option value="full-access">full-access</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="message-input">Message</label>
+          <textarea
+            id="message-input"
+            rows="5"
+            placeholder="Send a prompt to the selected thread"
+          ></textarea>
+        </div>
+        <div class="row row-actions">
+          <button id="send-message-btn">Send Message</button>
+          <button id="resume-thread-btn" class="button-muted">Resume Thread</button>
+        </div>
+
+        <h3>RPC Control</h3>
+        <div class="row">
+          <label for="rpc-method-input">Method</label>
+          <input id="rpc-method-input" type="text" value="list_workspaces" />
+        </div>
+        <div class="row">
+          <label for="rpc-params-input">Params JSON</label>
+          <textarea id="rpc-params-input" rows="4">{}</textarea>
+        </div>
+        <div class="row row-actions">
+          <button id="run-rpc-btn">Run RPC</button>
+        </div>
+        <pre id="rpc-output" class="code"></pre>
+      </section>
+
+      <section class="panel column">
+        <h2>Realtime Events</h2>
+        <div class="row row-actions">
+          <button id="clear-events-btn" class="button-muted">Clear Log</button>
+        </div>
+        <div id="events-log" class="events-log"></div>
+      </section>
+    </main>
+
+    <script src="/console/app.js"></script>
+  </body>
+</html>

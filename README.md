@@ -13,6 +13,7 @@ CodexMonitor is a Tauri app for orchestrating multiple Codex agents across local
 - Worktree and clone agents for isolated work; worktrees live under the app data directory (legacy `.codex-worktrees` supported).
 - Thread management: pin/rename/archive/copy, per-thread drafts, and stop/interrupt in-flight turns.
 - Optional remote backend (daemon) mode for running Codex on another machine.
+- Browser web gateway MVP for LAN status observation and remote control APIs (HTTP + WebSocket).
 
 ### Composer & Agent Controls
 
@@ -72,6 +73,12 @@ Run in dev mode:
 ```bash
 npm run tauri dev
 ```
+
+### Browser Gateway MVP
+
+You can run a browser-facing gateway that proxies daemon APIs/events for LAN clients.
+
+See `docs/browser-web-gateway-mvp.md` for setup and endpoint details.
 
 ## Release Build
 
